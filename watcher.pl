@@ -25,27 +25,27 @@ sub watch_log {
     my $fh;
     retry(\&open, $fh, '<', $conf->{in});
     seek $fh, 0, 2;                     # end of the file
-	while ((stat $fh)[3] != 0) {        # number of (hard) links to the file
-		while (my $line = <$fh>) {
-			chomp $line;
-			check($line);
-		}
+    while ((stat $fh)[3] != 0) {        # number of (hard) links to the file
+        while (my $line = <$fh>) {
+            chomp $line;
+            check($line);
+        }
         nap();
-		seek $fh, 0, 1;                 # current position (emulates 'tail -f')
-	}
-	close $fh;
+        seek $fh, 0, 1;                 # current position (emulates 'tail -f')
+    }
+    close $fh;
 }
 
 sub retry {
     my $coderef = shift;
-	for (my $i = 1; $i <= $conf->{max_try}; $i++) {
-		eval {
+    for (my $i = 1; $i <= $conf->{max_try}; $i++) {
+        eval {
             $coderef->(@_);
         };
-		if ($@) {
-			if ($i == $conf->{max_try}) {
+        if ($@) {
+            if ($i == $conf->{max_try}) {
                 die $@
-			}
+            }
             else {
                 warn $@;
                 nap();
@@ -54,21 +54,21 @@ sub retry {
         else {
             return;
         }
-	}
+    }
 }
 
 sub check {
-	my $line = shift;
-	for my $pattern (@{$conf->{patterns}}) {
+    my $line = shift;
+    for my $pattern (@{$conf->{patterns}}) {
         my $tag = $pattern->{tag};
         my $re = $pattern->{re};
-		if ($line =~ $re) {
-			if ($tag ne '!') {
+        if ($line =~ $re) {
+            if ($tag ne '!') {
                 write_log($tag, $line);
-			}
-			last;
-		}
-	}
+            }
+            last;
+        }
+    }
 }
 
 sub write_log {
